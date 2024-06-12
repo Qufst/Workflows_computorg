@@ -1,0 +1,70 @@
+name: publish
+
+on:
+  workflow_call:
+    inputs:
+      config-path:
+        required: true
+        type: string
+    secrets:
+      token:
+        required: true
+        
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Configure Git
+        run: |
+          git config --global user.email "quentin.festor@etu.umontpellier.com"
+          git config --global user.name "quarto-github-actions"
+
+      - name: Restore artifact
+        uses: actions/download-artifact@v3
+        with: 
+          name: artifact-env
+          path: ${{ runner.temp }}/
+
+      - name: Restore name of sha from artifact
+        id: calculate-sha256
+        run: echo "sha256=$(head -n 1 ${{ runner.temp }}/activate_env.sh | cut -d '=' -f 2)" >> $GITHUB_OUTPUT
+      
+      - name: cat artifact
+        run: cat ${{ runner.temp }}/activate_env.sh
+
+
+      - name: Restore Cache environment
+        uses: actions/cache/restore@v4
+        with:
+          path: |
+            ~/micromamba-bin/
+            ~/micromamba/
+            ~/work/_temp/setup-micromamba/
+          key: ${{ runner.os }}-micromamba-${{ steps.calculate-sha256.outputs.sha256 }}
+
+
+      - name: Set up Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          tinytex: true
+
+      - name: Register TinyTeX globally for diagram.lua
+        run: |
+          mkdir -p ~/.local/bin
+          ~/.TinyTeX/bin/x86_64-linux/tlmgr option sys_bin ~/.local/bin
+          ~/.TinyTeX/bin/x86_64-linux/tlmgr path add
+          ~/.TinyTeX/bin/x86_64-linux/tlmgr install libertinus-fonts
+
+      - name: Install Computo extension for Quarto
+        run: |
+          quarto add --no-prompt computorg/computo-quarto-extension
+          
+      - name: Activate the environment from the cache with the script in the artifact
+        run: |
+          tail -n +2 /home/runner/work/_temp/activate_env.sh | source /dev/stdin
+
