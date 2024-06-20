@@ -90,7 +90,7 @@ jobs:
           quarto publish gh-pages template-computo-python.qmd
 
       - name: Cache environment
-        uses: actions/cache/save@v4
+        uses: actions/cache@v4
         with:
           path: |
             ~/micromamba-bin/
