@@ -74,9 +74,3 @@ jobs:
         run: |
           tail -n +2 ${{ runner.temp }}/activate_env.sh | source /dev/stdin
 
-      - name: Publish to GitHub Pages (and render)
-        uses: quarto-dev/quarto-actions/publish@v2
-        with:
-          target: gh-pages
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
