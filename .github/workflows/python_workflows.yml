@@ -87,7 +87,7 @@ jobs:
           # Activer l'environnement myenv
           micromamba activate "$ENV_NAME"
 
-          quarto publish gh-pages template-computo-python.qmd
+#quarto publish gh-pages template-computo-python.qmd
 
       - name: Cache environment
         uses: actions/cache@v4
